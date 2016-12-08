@@ -22,7 +22,7 @@ typedef struct double_linked_list
 } dbl_list;
 
 
-node* create()
+node* node_create()
 {
     node *tmp = (node*) malloc(sizeof(node));
     if (tmp == NULL)
@@ -30,6 +30,7 @@ node* create()
         printf("Smth wrong in node*create\n");
         exit(1);
     }
+
     tmp->category=0;
     tmp->value = 0;
     tmp->next = NULL;
@@ -38,11 +39,11 @@ node* create()
     return tmp;
 }
 
-void node_add(dbl_list *dbll, char c, int flag)
+void node_add(dbl_list *dbll, int c, int flag)
 {
-    node*new_struct=create();
-//возможно сюда надо адрес, но все работает
-    new_struct->value = c-'0';
+    node*new_struct=node_create();
+
+    new_struct->value = c;
     if (flag == 0)
     {
         new_struct->category=1;
@@ -56,15 +57,19 @@ void node_add(dbl_list *dbll, char c, int flag)
 
     new_struct->next = dbll->head;
     new_struct->prev = NULL;
+
     if (dbll->head)
     {
         dbll->head->prev = new_struct;
     }
+
     dbll->head = new_struct;
+
     if (!dbll->tail)
     {
         dbll->tail = new_struct;
     }
+
     dbll->size++;
 }
 
@@ -89,8 +94,6 @@ void node_del(dbl_list *dbll)
         dbll->head->prev=NULL;
         free(tmp);
         dbll->size--;
-        //printf("del1\n");
-        //next = tmp->next;
     }
 }
 
@@ -98,6 +101,7 @@ void number_delete(dbl_list *dbll)
 {
     int count=dbll->head->category;
     int k;
+
     for(k=0;k<count;k++)
     {
         node_del(dbll);
@@ -115,24 +119,27 @@ dbl_list* create_dbl_list()
 
 void delete_dbl_list(dbl_list **dbll)
 {
-
     node *tmp = (*dbll)->head;
     node *next = NULL;
+
     while (tmp)
     {
-        printf("del\n");
         next = tmp->next;
         free(tmp);
         tmp = next;
     }
+
     free(*dbll);
     (*dbll) = NULL;
+
+    printf("Goodbye\n");
 }
 
 void print_resalt(dbl_list *dbll)
 {
     node *pointer=dbll->head->first;
     node *buff = NULL;
+
     while (pointer!=dbll->head)
     {
         printf("%d",pointer->value);
@@ -140,6 +147,82 @@ void print_resalt(dbl_list *dbll)
         pointer = buff;
     }
     printf("%d\n",pointer->value);
+}
+
+void buff_to_dbll(dbl_list *dbll_buff, dbl_list *dbll)
+{
+    int value;
+    int flag=0;
+    node *tmp = dbll_buff->head;
+    while(1)
+    {
+        value=tmp->value;
+        node_add(dbll, value, flag);
+        flag++;
+
+        if(tmp->category == 1)
+        {
+            break;
+        }
+        tmp=tmp->next;
+    }
+}
+
+void sum(dbl_list *dbll)
+{
+    dbl_list* dbll_buff=create_dbl_list();
+    node *num1 = dbll->head->first->next;
+    node *num2 = dbll->head;
+
+    if (num2->category >= num1->category) //переприсвавает если 1<2
+    {
+        num1 = dbll->head;
+        num2 = dbll->head->first->next;
+    }
+
+    int sum;
+    int plus=0;
+    int flag=0;
+    int a;//num1(value)
+    int b;//num2(value)
+
+    while(1)
+    {
+        a=num1->value;
+        b=num2->value;
+        sum=(a+b+plus)%10;
+        plus=(a+b+plus)/10;
+
+        node_add(dbll_buff, sum, flag);
+        flag++;
+
+        if(num2->category==1)
+        {
+            num2->value=0;
+        }
+        else
+        {
+            num2=num2->next;
+        }
+
+        if(num1->category==1)
+        {
+            break;
+        }
+        else
+        {
+            num1=num1->next;
+        }
+    }
+
+    if(plus)
+    {
+        node_add(dbll_buff, plus, flag);
+    }
+
+    number_delete(dbll);
+    number_delete(dbll);
+    buff_to_dbll(dbll_buff,dbll);
 }
 
 int main()
@@ -153,7 +236,7 @@ int main()
         switch (c)
         {
         case '+':
-            printf("its plus\n");
+            sum(dbll);
             break;
         case 'd':
             number_delete(dbll);
@@ -171,16 +254,17 @@ int main()
         default:
             if(c!='\n')
             {
-                node_add(dbll, c,flag);
+                node_add(dbll, c-'0',flag);
                 flag++;
             }
             else
             {
                 flag=0;
-                printf("принято--\\n\n");
+                printf("принято\n");
             }
             break;
         }
+
         c=getchar();
     }
 
