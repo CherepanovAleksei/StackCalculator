@@ -9,6 +9,7 @@ typedef struct node
 {
     int value; //значение
     int category;//разряд(сколько цифр до начала)
+    char minus;
     struct node *next;
     struct node *prev;
     struct node *first;
@@ -20,6 +21,29 @@ typedef struct double_linked_list
     node *head;
     node *tail;
 } dbl_list;
+
+void change_sign(dbl_list *dbll)
+{
+    node*tmp=dbll->head;
+    if(tmp->minus)
+    {
+        while(tmp->category!=1)
+        {
+            tmp->minus=0;
+            tmp=tmp->next;
+        }
+        tmp->minus=0;
+    }
+    else
+    {
+        while(tmp->category!=1)
+        {
+            tmp->minus=1;
+            tmp=tmp->next;
+        }
+        tmp->minus=1;
+    }
+}
 
 
 node* node_create()
@@ -33,13 +57,14 @@ node* node_create()
 
     tmp->category=0;
     tmp->value = 0;
+    tmp->minus = 0;
     tmp->next = NULL;
     tmp->prev = NULL;
     tmp->first = NULL;
     return tmp;
 }
 
-void node_add(dbl_list *dbll, int c, int flag)
+void node_add(dbl_list *dbll, int c, int flag, char minus)
 {
     node*new_struct=node_create();
 
@@ -48,11 +73,13 @@ void node_add(dbl_list *dbll, int c, int flag)
     {
         new_struct->category=1;
         new_struct->first=new_struct;
+        new_struct->minus=minus;
     }
     else
     {
         new_struct->category=dbll->head->category+1;
         new_struct->first=dbll->head->first;
+        new_struct->minus=dbll->head->minus;
     }
 
     new_struct->next = dbll->head;
@@ -75,6 +102,7 @@ void node_add(dbl_list *dbll, int c, int flag)
 
 void node_del(dbl_list *dbll)
 {
+
     if(dbll->head == dbll->tail)
     {
         node *tmp = dbll->head;
@@ -138,13 +166,16 @@ void delete_dbl_list(dbl_list **dbll)
 void print_resalt(dbl_list *dbll)
 {
     node *pointer=dbll->head->first;
-    node *buff = NULL;
+
+    if(pointer->minus > 0)
+    {
+        printf("-");
+    }
 
     while (pointer!=dbll->head)
     {
         printf("%d",pointer->value);
-        buff = pointer->prev;
-        pointer = buff;
+        pointer = pointer->prev;
     }
     printf("%d\n",pointer->value);
 }
@@ -157,7 +188,7 @@ void buff_to_dbll(dbl_list *dbll_buff, dbl_list *dbll)
     while(1)
     {
         value=tmp->value;
-        node_add(dbll, value, flag);
+        node_add(dbll, value, flag, 0);
         flag++;
 
         if(tmp->category == 1)
@@ -193,7 +224,7 @@ void sum(dbl_list *dbll)
         sum=(a+b+plus)%10;
         plus=(a+b+plus)/10;
 
-        node_add(dbll_buff, sum, flag);
+        node_add(dbll_buff, sum, flag, 0);
         flag++;
 
         if(num2->category==1)
@@ -217,7 +248,7 @@ void sum(dbl_list *dbll)
 
     if(plus)
     {
-        node_add(dbll_buff, plus, flag);
+        node_add(dbll_buff, plus, flag, 0);
     }
 
     number_delete(dbll);
@@ -225,18 +256,147 @@ void sum(dbl_list *dbll)
     buff_to_dbll(dbll_buff,dbll);
 }
 
+void subtraction(dbl_list *dbll)
+{
+    dbl_list* dbll_buff=create_dbl_list();
+    node *num1 = dbll->head->first->next;
+    node *num2 = dbll->head;
+    char minus=0;
+    if (num2->category > num1->category || (num2->category == num1->category && num2->first->value > num1->first->value)) //переприсвавает если 1<2
+    {
+        num1 = dbll->head;
+        num2 = dbll->head->first->next;
+        minus++;
+    }
+    node *buff;
+
+    int flag=0;
+    int a;//num1(value)
+    int b;//num2(value)
+
+    while(1)
+    {
+        a=num1->value;
+        b=num2->value;
+        if (a<b)
+        {
+            a+=10;
+            buff=num1->next;
+            while(1)
+            {
+                if(!buff->value)
+                {
+                    buff->value=9;
+                    buff=buff->next;
+                }
+                else
+                {
+                    buff->value--;
+                    break;
+                }
+            }
+
+        }
+
+        node_add(dbll_buff, a-b, flag, 0);
+        flag++;
+
+        if(num2->category==1)
+        {
+            num2->value=0;
+        }
+        else
+        {
+            num2=num2->next;
+        }
+
+        if(num1->category==1)
+        {
+            break;
+        }
+        else
+        {
+            num1=num1->next;
+        }
+    }
+
+    buff=dbll_buff->head;
+    if(buff->value==0)
+    {
+        while(1)
+        {
+            node_del(dbll_buff);
+            buff=dbll_buff->head;
+            if(buff->value!=0)
+            {
+                break;
+            }
+        }
+    }
+
+    /** Альтернатива
+    while(1)
+    {
+        buff=dbll_buff->head;
+        if(buff->value==0)
+        {
+            node_del(dbll_buff);
+        }
+        else
+        {
+            break;
+        }
+    }*/
+
+    number_delete(dbll);
+    number_delete(dbll);
+    buff_to_dbll(dbll_buff,dbll);
+
+    if(minus)
+    {
+        change_sign(dbll);
+    }
+}
+
+
+
 int main()
 {
     dbl_list* dbll=create_dbl_list();
     char c;
     int flag=0;
+    char minus=0;
     c=getchar();
     while(c!='q')
     {
         switch (c)
         {
         case '+':
-            sum(dbll);
+            //++
+            if(dbll->head->minus==0 && dbll->head->first->next->minus==0)
+            {
+                sum(dbll);
+            }
+            //--
+            else if (dbll->head->minus > 0 && dbll->head->first->next->minus > 0)
+            {
+                sum(dbll);
+                change_sign(dbll);
+            }
+            //+-
+            else if (dbll->head->minus > 0 && dbll->head->first->next->minus == 0)
+            {
+                subtraction(dbll);
+            }
+            //-+
+            else if (dbll->head->minus == 0 && dbll->head->first->next->minus > 0)
+            {
+                subtraction(dbll);
+                change_sign(dbll);
+            }
+            break;
+        case '-':
+            minus++;
             break;
         case 'd':
             number_delete(dbll);
@@ -254,12 +414,39 @@ int main()
         default:
             if(c!='\n')
             {
-                node_add(dbll, c-'0',flag);
+                node_add(dbll, c-'0',flag, minus);
                 flag++;
+                minus=0;
             }
             else
             {
+                if(minus)
+                {
+                    //++
+                    if(dbll->head->minus==0 && dbll->head->first->next->minus==0)
+                    {
+                        subtraction(dbll);
+                    }
+                    //--!
+                    else if (dbll->head->minus > 0 && dbll->head->first->next->minus > 0)
+                    {
+                        subtraction(dbll);
+                        change_sign(dbll);
+                    }
+                    //+-
+                    else if (dbll->head->minus > 0 && dbll->head->first->next->minus == 0)
+                    {
+                        sum(dbll);
+                    }
+                    //-+
+                    else if (dbll->head->minus == 0 && dbll->head->first->next->minus > 0)
+                    {
+                        sum(dbll);
+                        change_sign(dbll);
+                    }
+                }
                 flag=0;
+                minus=0;
                 printf("принято\n");
             }
             break;
