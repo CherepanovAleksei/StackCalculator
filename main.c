@@ -3,8 +3,6 @@
 #include <string.h>
 #include <stddef.h>
 
-
-
 typedef struct node
 {
     int value; //значение
@@ -358,7 +356,96 @@ void subtraction(dbl_list *dbll)
     }
 }
 
+void multiplication(dbl_list *dbll)
+{
+    dbl_list* dbll_buff=create_dbl_list();
+    node *num1 = dbll->head->first->next;
+    node *num2 = dbll->head;
 
+    if (num2->category > num1->category) //переприсвавает если 1<2
+    {
+        num1 = dbll->head;
+        num2 = dbll->head->first->next;
+    }
+
+    node *begin_of_num1 = num1;
+    int cat1=num1->category;
+    int flag=0;
+    int i;
+    int count=num1->category+num2->category;
+
+    for(i=0;i<count;i++)
+    {
+        node_add(dbll_buff, 0, flag, 0);
+        flag++;
+    }
+
+    node *tmp=dbll_buff->tail;
+    node *last_pos_of_tmp=tmp;
+    int a;//num1(value)
+    int b=num2->value;//num2(value)
+    int plus=0;
+
+    while(1)
+    {
+        a=num1->value;
+        tmp->value+=a*b;
+
+        if(num1->category==1)
+        {
+            tmp=last_pos_of_tmp;
+            plus=0;
+
+            for(i=0;i<=cat1;i++)//на 1 больше
+            {
+                tmp->value+=plus;
+                plus=0;
+                while(tmp->value > 9)
+                {
+                    tmp->value-=10;
+                    plus++;
+                }
+                tmp = tmp->prev;
+            }
+
+            if(num2->category==1)
+            {
+                break;
+            }
+            else
+            {
+                num1=begin_of_num1;
+                last_pos_of_tmp=last_pos_of_tmp->prev;
+                tmp=last_pos_of_tmp;
+                num2=num2->next;
+                b=num2->value;
+            }
+        }
+        else
+        {
+            num1=num1->next;
+            tmp=tmp->prev;
+        }
+    }
+
+    tmp=dbll_buff->head;
+    if(tmp->value==0)
+    {
+        while(1)
+        {
+            node_del(dbll_buff);
+            tmp=dbll_buff->head;
+            if(tmp->value!=0)
+            {
+                break;
+            }
+        }
+    }
+
+    number_delete(dbll);
+    number_delete(dbll);
+    buff_to_dbll(dbll_buff,dbll);
+}
 
 int main()
 {
@@ -397,6 +484,19 @@ int main()
             break;
         case '-':
             minus++;
+            break;
+        case '*':
+            //++ --
+            if(dbll->head->minus == dbll->head->first->next->minus)
+            {
+                multiplication(dbll);
+            }
+            //+- -+
+            else if (dbll->head->minus != dbll->head->first->next->minus)
+            {
+                multiplication(dbll);
+                change_sign(dbll);
+            }
             break;
         case 'd':
             number_delete(dbll);
