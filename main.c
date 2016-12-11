@@ -20,6 +20,49 @@ typedef struct double_linked_list
     node *tail;
 } dbl_list;
 
+//output:1=last(num2)>first(num1) 0=last<first
+int comparison(dbl_list *dbll)
+{
+    int category1=dbll->head->first->next->category;
+    int category2=dbll->head->category;
+    if(category1 > category2)
+    {
+        return 1;
+    }
+    else if(category1 < category2)
+    {
+        return -1;
+    }
+    else
+    {
+        node *num1 = dbll->head->first->next->first;
+        node *num2 = dbll->head->first;
+        while(1)
+        {
+            if(num1->value > num2->value)
+            {
+                return 1;
+            }
+            else if(num1->value < num2->value)
+            {
+                return -1;
+            }
+            else
+            {
+                if(num2->prev)
+                {
+                    num1=num1->prev;
+                    num2=num2->prev;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
+    }
+}
+
 void change_sign(dbl_list *dbll)
 {
     node*tmp=dbll->head;
@@ -107,6 +150,7 @@ void node_del(dbl_list *dbll)
         dbll->head=NULL;
         dbll->tail=NULL;
         free(tmp);
+        dbll->size--;
     }
     else
     {
@@ -165,7 +209,7 @@ void print_resalt(dbl_list *dbll)
 {
     node *pointer=dbll->head->first;
 
-    if(pointer->minus > 0)
+    if(pointer->minus > 0 && dbll->tail->value!=0)
     {
         printf("-");
     }
@@ -195,6 +239,26 @@ void buff_to_dbll(dbl_list *dbll_buff, dbl_list *dbll)
         }
         tmp=tmp->next;
     }
+}
+
+void roll(dbl_list *dbll)
+{
+    dbl_list *dbll_buff=create_dbl_list();
+    int flag=0;
+    node *tmp = dbll->tail;
+    while(1)
+    {
+        node_add(dbll_buff, tmp->value, flag, 0);
+        flag++;
+
+        if(!tmp->prev)
+        {
+            break;
+        }
+        tmp=tmp->prev;
+    }
+    number_delete(dbll);
+    buff_to_dbll(dbll_buff,dbll);
 }
 
 void sum(dbl_list *dbll)
@@ -257,15 +321,21 @@ void sum(dbl_list *dbll)
 void subtraction(dbl_list *dbll)
 {
     dbl_list* dbll_buff=create_dbl_list();
-    node *num1 = dbll->head->first->next;
-    node *num2 = dbll->head;
+    node *num1;
+    node *num2;
     char minus=0;
-    if (num2->category > num1->category || (num2->category == num1->category && num2->first->value > num1->first->value)) //переприсвавает если 1<2
+    if(comparison(dbll)<0)
     {
-        num1 = dbll->head;
-        num2 = dbll->head->first->next;
+        num1=dbll->head;
+        num2=dbll->head->first->next;
         minus++;
     }
+    else
+    {
+        num1 = dbll->head->first->next;
+        num2 = dbll->head;
+    }
+
     node *buff;
 
     int flag=0;
@@ -317,12 +387,16 @@ void subtraction(dbl_list *dbll)
             num1=num1->next;
         }
     }
-
+//delete '0'
     buff=dbll_buff->head;
     if(buff->value==0)
     {
         while(1)
         {
+            if(dbll_buff->head == dbll_buff->tail)
+            {
+                break;
+            }
             node_del(dbll_buff);
             buff=dbll_buff->head;
             if(buff->value!=0)
@@ -332,26 +406,65 @@ void subtraction(dbl_list *dbll)
         }
     }
 
-    /** Альтернатива
-    while(1)
-    {
-        buff=dbll_buff->head;
-        if(buff->value==0)
-        {
-            node_del(dbll_buff);
-        }
-        else
-        {
-            break;
-        }
-    }*/
-
     number_delete(dbll);
     number_delete(dbll);
     buff_to_dbll(dbll_buff,dbll);
 
     if(minus)
     {
+        change_sign(dbll);
+    }
+}
+
+
+void sum_if(dbl_list *dbll)
+{
+    //++
+    if(dbll->head->minus==0 && dbll->head->first->next->minus==0)
+    {
+        sum(dbll);
+    }
+    //--
+    else if (dbll->head->minus > 0 && dbll->head->first->next->minus > 0)
+    {
+        sum(dbll);
+        change_sign(dbll);
+    }
+    //+-
+    else if (dbll->head->minus > 0 && dbll->head->first->next->minus == 0)
+    {
+        subtraction(dbll);
+    }
+    //-+
+    else if (dbll->head->minus == 0 && dbll->head->first->next->minus > 0)
+    {
+        subtraction(dbll);
+        change_sign(dbll);
+    }
+}
+
+void subtraction_if(dbl_list *dbll)
+{
+    //++
+    if(dbll->head->minus==0 && dbll->head->first->next->minus==0)
+    {
+        subtraction(dbll);
+    }
+    //--!
+    else if (dbll->head->minus > 0 && dbll->head->first->next->minus > 0)
+    {
+        subtraction(dbll);
+        change_sign(dbll);
+    }
+    //+-
+    else if (dbll->head->minus > 0 && dbll->head->first->next->minus == 0)
+    {
+        sum(dbll);
+    }
+    //-+
+    else if (dbll->head->minus == 0 && dbll->head->first->next->minus > 0)
+    {
+        sum(dbll);
         change_sign(dbll);
     }
 }
@@ -428,23 +541,134 @@ void multiplication(dbl_list *dbll)
         }
     }
 
-    tmp=dbll_buff->head;
+    //delete '0'
+        tmp=dbll_buff->head;
+        if(tmp->value==0)
+        {
+            while(1)
+            {
+                if(dbll_buff->head == dbll_buff->tail)
+                {
+                    break;
+                }
+                node_del(dbll_buff);
+                tmp=dbll_buff->head;//исправить баг с '0'!!!-удаляется
+                if(tmp->value!=0)
+                {
+                    break;
+                }
+            }
+        }
+
+    number_delete(dbll);
+    number_delete(dbll);
+    buff_to_dbll(dbll_buff,dbll);
+}
+
+void division(dbl_list *dbll)
+{
+    dbl_list* dbll_res=create_dbl_list();
+
+
+    dbl_list* dbll_buff=create_dbl_list();
+    node *num1 = dbll->head->first->next->first;
+    node *num2;
+
+    int category1=dbll->head->first->next->category;
+    int category2=dbll->head->category;
+    int count;
+
+    int flag1=0;
+    int flag2;
+    node_add(dbll_res,0,0,0);
+
+    node *res=dbll_res->head;
+    while(1)
+    {
+        //добавляем 1 цифру из делителя
+        node_add(dbll_buff, num1->value,flag1,0);
+        flag1++;
+
+        //num2 to buff struct добавил все частное
+        flag2=0;
+        num2 = dbll->head->first;
+        for(count=0; count<category2;count++)
+        {
+            node_add(dbll_buff,num2->value,flag2,0);
+            flag2++;
+            num2=num2->prev;
+        }//num2 заходит в null
+
+        //проверка
+        if(comparison(dbll_buff)<0)
+        {//если вычесть нельзя
+
+            number_delete(dbll_buff);
+
+        }
+        else
+        {//если вычесть можно
+            while(1)
+            {
+                subtraction(dbll_buff);
+                res->value++;
+
+                //num2 to buff struct добавил все частное
+                flag2=0;
+                num2 = dbll->head->first;
+                for(count=0; count<category2;count++)
+                {
+                    node_add(dbll_buff,num2->value,flag2,0);
+                    flag2++;
+                    num2=num2->prev;
+                }//num2 заходит в null
+
+                if(comparison(dbll_buff)<0)
+                {//если вычесть нельзя
+
+                    number_delete(dbll_buff);
+
+                    break;
+                }
+            }
+        }
+
+        if(num1->category!=category1)
+        {
+            num1=num1->prev;
+            node_add(dbll_res,0,1,0);
+            res=dbll_res->head;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    roll(dbll_res);
+
+    //delete '0'
+    node *tmp;
+    tmp=dbll_res->head;
     if(tmp->value==0)
     {
         while(1)
         {
-            node_del(dbll_buff);
-            tmp=dbll_buff->head;
+            if(dbll_res->head == dbll_res->tail)
+            {
+                break;
+            }
+            node_del(dbll_res);
+            tmp=dbll_res->head;//исправить баг с '0'!!!-удаляется
             if(tmp->value!=0)
             {
                 break;
             }
         }
     }
-
     number_delete(dbll);
     number_delete(dbll);
-    buff_to_dbll(dbll_buff,dbll);
+    buff_to_dbll(dbll_res,dbll);
 }
 
 int main()
@@ -459,28 +683,7 @@ int main()
         switch (c)
         {
         case '+':
-            //++
-            if(dbll->head->minus==0 && dbll->head->first->next->minus==0)
-            {
-                sum(dbll);
-            }
-            //--
-            else if (dbll->head->minus > 0 && dbll->head->first->next->minus > 0)
-            {
-                sum(dbll);
-                change_sign(dbll);
-            }
-            //+-
-            else if (dbll->head->minus > 0 && dbll->head->first->next->minus == 0)
-            {
-                subtraction(dbll);
-            }
-            //-+
-            else if (dbll->head->minus == 0 && dbll->head->first->next->minus > 0)
-            {
-                subtraction(dbll);
-                change_sign(dbll);
-            }
+            sum_if(dbll);
             break;
         case '-':
             minus++;
@@ -497,6 +700,9 @@ int main()
                 multiplication(dbll);
                 change_sign(dbll);
             }
+            break;
+        case '/':
+            division(dbll);
             break;
         case 'd':
             number_delete(dbll);
@@ -522,28 +728,7 @@ int main()
             {
                 if(minus)
                 {
-                    //++
-                    if(dbll->head->minus==0 && dbll->head->first->next->minus==0)
-                    {
-                        subtraction(dbll);
-                    }
-                    //--!
-                    else if (dbll->head->minus > 0 && dbll->head->first->next->minus > 0)
-                    {
-                        subtraction(dbll);
-                        change_sign(dbll);
-                    }
-                    //+-
-                    else if (dbll->head->minus > 0 && dbll->head->first->next->minus == 0)
-                    {
-                        sum(dbll);
-                    }
-                    //-+
-                    else if (dbll->head->minus == 0 && dbll->head->first->next->minus > 0)
-                    {
-                        sum(dbll);
-                        change_sign(dbll);
-                    }
+                    subtraction_if(dbll);
                 }
                 flag=0;
                 minus=0;
