@@ -13,7 +13,7 @@ int main()
     int flag=0;
     char minus=0;
     c=getchar();
-    while(c!='q')
+    while(c!=EOF)
     {
         switch (c)
         {
@@ -32,7 +32,7 @@ int main()
         case 'd':
             number_delete(dbll);
             break;
-        case 'r':
+        case '=':
             if(dbll->head)
             {
                 print_resalt(dbll);

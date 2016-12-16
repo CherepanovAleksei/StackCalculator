@@ -12,7 +12,7 @@ typedef struct node
 
 typedef struct double_linked_list
 {
-    int size;
+    long long int size;
     node *head;
     node *tail;
 } dbl_list;
