@@ -183,8 +183,6 @@ void delete_dbl_list(dbl_list **dbll)
 
     free(*dbll);
     (*dbll) = NULL;
-
-    printf("Goodbye\n");
 }
 
 void print_resalt(dbl_list *dbll)
@@ -241,4 +239,5 @@ void roll(dbl_list *dbll)
     }
     number_delete(dbll);
     buff_to_dbll(dbll_buff,dbll);
+    delete_dbl_list(&dbll_buff);
 }

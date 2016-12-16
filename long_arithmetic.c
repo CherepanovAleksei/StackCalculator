@@ -61,6 +61,7 @@ void sum(dbl_list *dbll)
     number_delete(dbll);
     number_delete(dbll);
     buff_to_dbll(dbll_buff,dbll);
+    delete_dbl_list(&dbll_buff);
 }
 
 void subtraction(dbl_list *dbll)
@@ -154,6 +155,7 @@ void subtraction(dbl_list *dbll)
     number_delete(dbll);
     number_delete(dbll);
     buff_to_dbll(dbll_buff,dbll);
+    delete_dbl_list(&dbll_buff);
 
     if(minus)
     {
@@ -255,6 +257,7 @@ void multiplication(dbl_list *dbll)
     number_delete(dbll);
     number_delete(dbll);
     buff_to_dbll(dbll_buff,dbll);
+    delete_dbl_list(&dbll_buff);
 }
 
 void division(dbl_list *dbll)
@@ -361,6 +364,8 @@ void division(dbl_list *dbll)
     number_delete(dbll);
     number_delete(dbll);
     buff_to_dbll(dbll_res,dbll);
+    delete_dbl_list(&dbll_res);
+    delete_dbl_list(&dbll_buff);
 }
 
 void if_sum(dbl_list *dbll)
