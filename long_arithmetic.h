@@ -2,11 +2,12 @@
 
 #include "struct.h"
 
-void sum(dbl_list *dbll);
-void subtraction(dbl_list *dbll);
-void multiplication(dbl_list *dbll);
-void division(dbl_list *dbll);
-void if_sum(dbl_list *dbll);
-void if_subtraction(dbl_list *dbll);
-void if_multiplication(dbl_list *dbll);
-void if_division(dbl_list *dbll);
+void if_sum();
+void if_subtraction();
+void if_multiplication();
+void if_division();
+
+void sum();
+void subtraction();
+void multiplication();
+void division();

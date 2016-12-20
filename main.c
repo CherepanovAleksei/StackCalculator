@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "stack.h"
-//#include "long_arithmetic.h"
+#include "long_arithmetic.h"
 #include "struct.h"
 
 int main()
@@ -31,21 +31,21 @@ int main()
     {
         switch (symbol)
         {
-        /*case '+':
-            if_sum(dbll);
-            break;*/
+        case '+':
+            if_sum();
+            break;
         case '-':
             minus=1;
             break;
-        /*case '*':
-            if_multiplication(dbll);
+        case '*':
+            if_multiplication();
             break;
-        case '/':
+        /*case '/':
             if_division(dbll);
-            break;
-        case 'd':
-            number_delete(dbll);
             break;*/
+        case 'd':
+            num_pop(dbll_up->head);
+            break;
         case '=':
             if(dbll_up->head)
             {
@@ -80,10 +80,10 @@ int main()
                 if(new_number_flag)
                 {
                     //add new number
-                    dbll_num= num_push_after(dbll_up->head);
+                    dbll_num= num_push_head();
 
-                    str_fragment= (char*)malloc(sizeof(char)*(i+1));
                     i=count%9;
+                    str_fragment= (char*)malloc(sizeof(char)*(i+1));
                     for(count2=0; count2<i;count2++)
                     {
                         str_fragment[count2]=str_in[count2];
@@ -127,20 +127,15 @@ int main()
                 }
                 if(minus)
                 {
-                    //if_subtraction
+                    if_subtraction();
+                    minus=0;
                 }
 
             }
-            /*else if(minus)
-            {
-                if_subtraction(dbll);
-            }*/
-            //minus=0;
             break;
         }
         symbol=getchar();
     }
-
 
     up_pop();
 

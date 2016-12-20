@@ -3,7 +3,7 @@
 #include <stddef.h>
 
 #include "stack.h"
-//#include "long_arithmetic.h"
+#include "long_arithmetic.h"
 #include "struct.h"
 
 dbl_list_up* up_create()
@@ -12,6 +12,16 @@ dbl_list_up* up_create()
     dbll_up_new->head = NULL;
     dbll_up_new->tail = NULL;
     return dbll_up_new;
+}
+
+void up_pop()
+{
+  while(dbll_up->head)
+  {
+    num_pop(dbll_up->head);
+  }
+  free(dbll_up);
+  dbll_up=NULL;
 }
 
 dbl_list_num* num_create()
@@ -26,29 +36,11 @@ dbl_list_num* num_create()
     return dbll_num;
 }
 
-dbl_list_node* node_create()
-{
-    dbl_list_node *dbll_node = (dbl_list_node*) malloc(sizeof(dbl_list_node));
-    dbll_node->value=0;
-    dbll_node->next = NULL;
-    dbll_node->prev = NULL;
-    return dbll_node;
-}
-
-void up_pop()
-{
-    while(dbll_up->head)
-    {
-        num_pop(dbll_up->head);
-    }
-    free(dbll_up);
-    dbll_up=NULL;
-}
-
 //insert after number:
-dbl_list_num* num_push_after(dbl_list_num* num_base)
+dbl_list_num* num_push_head()
 {
     dbl_list_num *num_new=num_create();
+    dbl_list_num *num_base=dbll_up->head;
 
     if(num_base)
     {
@@ -68,41 +60,69 @@ dbl_list_num* num_push_after(dbl_list_num* num_base)
 
 void num_pop(dbl_list_num* num_del)
 {
-    if(dbll_up->head==dbll_up->tail)
+  if(dbll_up->head==dbll_up->tail)
+  {
+    dbll_up->head=NULL;
+    dbll_up->tail=NULL;
+    //size--
+  }
+  else
+  {
+    if(num_del->next)
     {
-        dbll_up->head=NULL;
-        dbll_up->tail=NULL;
-        //size--
+      num_del->next->prev=num_del->prev;
+    }
+    if(num_del->prev)
+    {
+      num_del->prev->next=num_del->next;
+    }
+    /*if(dbll_up->head==num_del)
+    {
+      dbll_up->head=num_del->next;
+    }
+    if (dbll_up->tail==num_del)
+    {
+      dbll_up->tail==num_del->prev;
+    }*/
+    if(!num_del->prev)
+    {
+        dbll_up->head=num_del->next;
+    }
+    if(!num_del->next)
+    {
+        dbll_up->tail=num_del->prev;
+    }
+    //size--
+  }
+
+  while (num_del->head)
+  {
+    node_pop_head(num_del);
+  }
+  free(num_del);
+  num_del=NULL;
+}
+
+void num_sign_change()
+{
+    if(dbll_up->head->sign)
+    {
+        dbll_up->head->sign=0;
     }
     else
     {
-        if(num_del->next)
-        {
-            num_del->next->prev=num_del->prev;
-        }
-        if(num_del->prev)
-        {
-            num_del->prev->next=num_del->next;
-        }
-        if(dbll_up->head==num_del)
-        {
-            dbll_up->head=num_del->next;
-        }
-        if (dbll_up->tail==num_del)
-        {
-            dbll_up->tail==num_del->prev;
-        }
-        //size--
+        dbll_up->head->sign=1;
     }
-
-    while (num_del->head)
-    {
-        node_pop_head(num_del);
-    }
-    free(num_del);
-    num_del=NULL;
 }
 
+dbl_list_node* node_create()
+{
+  dbl_list_node *dbll_node = (dbl_list_node*) malloc(sizeof(dbl_list_node));
+  dbll_node->value=0;
+  dbll_node->next = NULL;
+  dbll_node->prev = NULL;
+  return dbll_node;
+}
 
 void node_push_head(long long int fragment_of_num, dbl_list_num* dbll_num)
 {
@@ -181,6 +201,62 @@ void node_pop_tail(dbl_list_num* dbll_num)//нельзя вызывать на �
         dbll_num->tail->next=NULL;
         free(node_del);
         //size--
+    }
+}
+
+int comparison()
+{
+    dbl_list_node *num1=dbll_up->head->next->tail;
+    dbl_list_node *num2=dbll_up->head->tail;
+
+    while(1)
+    {
+        if(num1->prev && num2->prev)
+        {
+            num1=num1->prev;
+            num2=num2->prev;
+        }
+        else
+        {
+            if(num1->prev)
+            {
+                return 1;
+            }
+            else
+            {
+                if(num2->prev)
+                {
+                    return 0;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    num1=dbll_up->head->next->head;
+    num2=dbll_up->head->head;
+    while(1)
+    {
+        if(num1->value > num2->value)
+        {
+            return 1;
+        }
+        else if(num1->value < num2->value)
+        {
+            return 0;
+        }
+        else
+        {
+            if(!num1->next)
+            {
+                return 1;
+            }
+            num1=num1->next;
+            num2=num2->next;
+        }
     }
 }
 
