@@ -266,29 +266,31 @@ void multiplication()
             pointer=last_pos_of_pointer;
             plus=0;
 
-            while(pointer->prev)//на 1 больше
+            while(1)//растаскиваем
             {
                 pointer->value+=plus;
                 plus=0;
-                while(pointer->value > 999999999)
+                plus=pointer->value/1000000000;
+                pointer->value=pointer->value%1000000000;
+                if(!pointer->prev)
                 {
-                    pointer->value-=1000000000;
-                    plus++;
+                    if(plus)
+                    {
+                        node_push_head(plus, dbll_res);
+                    }
+                    break;
                 }
                 pointer = pointer->prev;
             }
-            if(plus)
-            {
-                node_push_head(plus, dbll_res);
-            }
+
 
             if(num2->prev)
             {
-              num1=begin_of_num1;
-              last_pos_of_pointer=last_pos_of_pointer->prev;
-              pointer=last_pos_of_pointer;
-              num2=num2->prev;
-              b=num2->value;
+                num1=begin_of_num1;
+                last_pos_of_pointer=last_pos_of_pointer->prev;
+                pointer=last_pos_of_pointer;
+                num2=num2->prev;
+                b=num2->value;
             }
             else
             {
