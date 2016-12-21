@@ -30,19 +30,47 @@ int main()
         switch (symbol)
         {
         case '+':
-            if_sum();
+            if(dbll_up->head && dbll_up->head->next)
+            {
+                if_sum();
+            }
+            else
+            {
+                printf("Few arguments,empty stack!\n");
+            }
             break;
         case '-':
             minus=1;
             break;
         case '*':
-            if_multiplication();
+            if(dbll_up->head && dbll_up->head->next)
+            {
+                if_multiplication();
+            }
+            else
+            {
+                printf("Few arguments,empty stack!\n");
+            }
             break;
         case '/':
-            if_division();
+            if(dbll_up->head && dbll_up->head->next)
+            {
+                if_division();
+            }
+            else
+            {
+                printf("Few arguments,empty stack!\n");
+            }
             break;
         case 'd':
-            num_pop(dbll_up, dbll_up->head);
+            if(dbll_up->head)
+            {
+                num_pop(dbll_up, dbll_up->head);
+            }
+            else
+            {
+                printf("Nothing to output!!!\n");
+            }
             break;
         case '=':
             if(dbll_up->head)
@@ -92,7 +120,14 @@ int main()
                 }
                 if(minus)
                 {
-                    if_subtraction();
+                    if(dbll_up->head && dbll_up->head->next)
+                    {
+                        if_subtraction();
+                    }
+                    else
+                    {
+                        printf("Few arguments,empty stack!\n");
+                    }
                     minus=0;
                 }
 
