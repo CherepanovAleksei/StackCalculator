@@ -18,7 +18,7 @@ void up_pop()
 {
   while(dbll_up->head)
   {
-    num_pop(dbll_up->head);
+    num_pop(dbll_up, dbll_up->head);
   }
   free(dbll_up);
   dbll_up=NULL;
@@ -36,34 +36,71 @@ dbl_list_num* num_create()
     return dbll_num;
 }
 
+void num_read(char*str_in,int count)
+{
+    dbl_list_num* dbll_num;
+    char* str_fragment;
+    int count2=0;
+    int count3=0;
+    int i;
+    //add new number
+    dbll_num= num_push_head(dbll_up);
+
+    i=count%9;
+    str_fragment= (char*)malloc(sizeof(char)*(i+1));
+    for(count2=0; count2<i;count2++)
+    {
+        str_fragment[count2]=str_in[count2];
+    }
+    str_fragment[count2]='\0';
+    node_push_head(atoll(str_fragment),dbll_num);
+
+    free(str_fragment);
+    str_fragment= (char*)malloc(sizeof(char)*10);
+    str_fragment[9]='\0';
+
+    i=count/9;
+    count=count2;
+    for(count2=0; count2<i; count2++)
+    {
+        for(count3=0;count3<9;count3++)
+        {
+            str_fragment[count3]=str_in[count+count3];
+        }
+        node_push_tail(atoll(str_fragment),dbll_num);
+        count+=9;
+    }
+    free(str_fragment);
+    node_pop_zeros(dbll_up);
+}
+
 //insert after number:
-dbl_list_num* num_push_head()
+dbl_list_num* num_push_head(dbl_list_up *dbll_base)
 {
     dbl_list_num *num_new=num_create();
-    dbl_list_num *num_base=dbll_up->head;
-
+    dbl_list_num *num_base=dbll_base->head;
     if(num_base)
     {
       num_base->prev=num_new;
       num_new->next=num_base;
-      dbll_up->head=num_new;
+      dbll_base->head=num_new;
       //size++
     }
     else
     {
-        dbll_up->head=num_new;
-        dbll_up->tail=num_new;
+        dbll_base->head=num_new;
+        dbll_base->tail=num_new;
         //size++
     }
     return num_new;
 }
 
-void num_pop(dbl_list_num* num_del)
+void num_pop(dbl_list_up* up_del,dbl_list_num* num_del)
 {
-  if(dbll_up->head==dbll_up->tail)
+  if(up_del->head==up_del->tail)
   {
-    dbll_up->head=NULL;
-    dbll_up->tail=NULL;
+    up_del->head=NULL;
+    up_del->tail=NULL;
     //size--
   }
   else
@@ -76,21 +113,21 @@ void num_pop(dbl_list_num* num_del)
     {
       num_del->prev->next=num_del->next;
     }
-    /*if(dbll_up->head==num_del)
+    /*if(up_del->head==num_del)
     {
-      dbll_up->head=num_del->next;
+      up_del->head=num_del->next;
     }
-    if (dbll_up->tail==num_del)
+    if (up_del->tail==num_del)
     {
-      dbll_up->tail==num_del->prev;
+      up_del->tail==num_del->prev;
     }*/
     if(!num_del->prev)
     {
-        dbll_up->head=num_del->next;
+        up_del->head=num_del->next;
     }
     if(!num_del->next)
     {
-        dbll_up->tail=num_del->prev;
+        up_del->tail=num_del->prev;
     }
     //size--
   }
@@ -204,10 +241,22 @@ void node_pop_tail(dbl_list_num* dbll_num)//нельзя вызывать на �
     }
 }
 
-int comparison()
+void node_pop_zeros(dbl_list_up *del_up)
 {
-    dbl_list_node *num1=dbll_up->head->next->tail;
-    dbl_list_node *num2=dbll_up->head->tail;
+    while(!del_up->head->head->value)
+    {
+        if(del_up->head->head==del_up->head->tail)
+        {
+            break;
+        }
+        node_pop_head(del_up->head);
+    }
+}
+
+int comparison(dbl_list_num* first, dbl_list_num* second)
+{
+    dbl_list_node *num1=first->tail;
+    dbl_list_node *num2=second->tail;
 
     while(1)
     {
@@ -236,8 +285,8 @@ int comparison()
         }
     }
 
-    num1=dbll_up->head->next->head;
-    num2=dbll_up->head->head;
+    num1=first->head;
+    num2=second->head;
     while(1)
     {
         if(num1->value > num2->value)

@@ -10,19 +10,17 @@
 int main()
 {
     dbll_up= up_create();
-    dbl_list_num* dbll_num;
+
 
     char* str_in;
-    char* str_fragment;
+
     long long count=0;
-    int count2=0;
-    int count3=0;
+
     long long size_str=2;
 
     char symbol;
-    int i;
+
     int new_number_flag=0;
-    int new_number=0;
     char minus=0;
     symbol=getchar();
 
@@ -40,11 +38,11 @@ int main()
         case '*':
             if_multiplication();
             break;
-        /*case '/':
-            if_division(dbll);
-            break;*/
+        case '/':
+            if_division();
+            break;
         case 'd':
-            num_pop(dbll_up->head);
+            num_pop(dbll_up, dbll_up->head);
             break;
         case '=':
             if(dbll_up->head)
@@ -79,51 +77,18 @@ int main()
             {
                 if(new_number_flag)
                 {
-                    //add new number
-                    dbll_num= num_push_head();
+                    num_read(str_in,count);
 
-                    i=count%9;
-                    str_fragment= (char*)malloc(sizeof(char)*(i+1));
-                    for(count2=0; count2<i;count2++)
+                    if(minus)
                     {
-                        str_fragment[count2]=str_in[count2];
-                    }
-                    str_fragment[count2]='\0';
-                    node_push_head(atoll(str_fragment),dbll_num);
-
-                    free(str_fragment);
-                    str_fragment= (char*)malloc(sizeof(char)*10);
-                    str_fragment[9]='\0';
-
-                    i=count/9;
-                    count=count2;
-                    for(count2=0; count2<i; count2++)
-                    {
-                        for(count3=0;count3<9;count3++)
-                        {
-                            str_fragment[count3]=str_in[count+count3];
-                        }
-                        node_push_tail(atoll(str_fragment),dbll_num);
-                        count+=9;
+                        num_sign_change();
+                        minus=0;
                     }
                     count=0;
                     size_str=2;
                     new_number_flag=0;
                     free(str_in);
-                    free(str_fragment);
-                    while(!dbll_up->head->head->value)
-                    {
-                        if(dbll_num->head==dbll_num->tail)
-                        {
-                            break;
-                        }
-                        node_pop_head(dbll_num);
-                    }
-                    if(minus)
-                    {
-                        dbll_up->head->sign=1;
-                        minus=0;
-                    }
+
                 }
                 if(minus)
                 {

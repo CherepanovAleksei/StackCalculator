@@ -92,13 +92,13 @@ void sum()
 {
     dbl_list_node *num1=dbll_up->head->next->tail;
     dbl_list_node *num2=dbll_up->head->tail;
-    if(!comparison())
+    if(!comparison(dbll_up->head->next,dbll_up->head))
     {
         num1=dbll_up->head->tail;
         num2=dbll_up->head->next->tail;
     }
 
-    dbl_list_num *dbll_res= num_push_head();
+    dbl_list_num *dbll_res= num_push_head(dbll_up);
 
     long long int sum;
     long long int plus=0;
@@ -139,8 +139,8 @@ void sum()
         node_push_head(plus, dbll_res);
     }
 
-    num_pop(dbll_up->head->next);
-    num_pop(dbll_up->head->next);
+    num_pop(dbll_up, dbll_up->head->next);
+    num_pop(dbll_up, dbll_up->head->next);
 }
 
 void subtraction()
@@ -148,14 +148,14 @@ void subtraction()
     dbl_list_node *num1=dbll_up->head->next->tail;
     dbl_list_node *num2=dbll_up->head->tail;
     char minus=0;
-    if(!comparison())
+    if(!comparison(dbll_up->head->next,dbll_up->head))
     {
         num1=dbll_up->head->tail;
         num2=dbll_up->head->next->tail;
         minus=1;
     }
 
-    dbl_list_num *dbll_res= num_push_head();
+    dbl_list_num *dbll_res= num_push_head(dbll_up);
     if (minus)
     {
         dbll_res->sign=1;
@@ -219,22 +219,22 @@ void subtraction()
         node_pop_head(dbll_res);
     }
 
-    num_pop(dbll_up->head->next);
-    num_pop(dbll_up->head->next);
+    num_pop(dbll_up, dbll_up->head->next);
+    num_pop(dbll_up, dbll_up->head->next);
 }
 
 void multiplication()
 {
     dbl_list_node *num1=dbll_up->head->next->tail;
     dbl_list_node *num2=dbll_up->head->tail;
-    if(!comparison())
+    if(!comparison(dbll_up->head->next,dbll_up->head))
     {
         num1=dbll_up->head->tail;
         num2=dbll_up->head->next->tail;
     }
     dbl_list_node *begin_of_num1 = num1;
 
-    dbl_list_num *dbll_res= num_push_head();
+    dbl_list_num *dbll_res= num_push_head(dbll_up);
     node_push_head(0, dbll_res);
     dbl_list_node *pointer=dbll_res->tail;
     dbl_list_node *last_pos_of_pointer=pointer;
@@ -298,110 +298,124 @@ void multiplication()
             }
         }
     }
+    node_pop_zeros(dbll_up);
+    num_pop(dbll_up, dbll_up->head->next);
+    num_pop(dbll_up, dbll_up->head->next);
 }
 
-void division()
+dbl_list_num * subtraction_for_division(dbl_list_up *buff_up, dbl_list_num* divider)
 {
-  
-}
-/*
-void multiplication(dbl_list *dbll)
-{
-    dbl_list* dbll_buff=create_dbl_list();
-    node *num1 = dbll->head->first->next;
-    node *num2 = dbll->head;
+    dbl_list_node *num1=buff_up->head->tail;
+    dbl_list_node *num2=divider->tail;
 
-    if (num2->category > num1->category) //переприсвавает если 1<2
-    {
-        num1 = dbll->head;
-        num2 = dbll->head->first->next;
-    }
+    dbl_list_num *dbll_res= num_push_head(buff_up);
 
-    node *begin_of_num1 = num1;
-    int cat1=num1->category;
-    int flag=0;
-    int i;
-    int count=num1->category+num2->category;
-
-    for(i=0;i<count;i++)
-    {
-        node_add(dbll_buff, 0, flag, 0);
-        flag++;
-    }
-
-    node *tmp=dbll_buff->tail;
-    node *last_pos_of_tmp=tmp;
-    int a;//num1(value)
-    int b=num2->value;//num2(value)
-    int plus=0;
-
+    long long int a;//num1(value)
+    long long int b;//num2(value)
+    dbl_list_node *buff;
+    a=num1->value;
+    b=num2->value;
     while(1)
     {
-        a=num1->value;
-        tmp->value+=a*b;
 
-        if(num1->category==1)
+        if (a<b)
         {
-            tmp=last_pos_of_tmp;
-            plus=0;
-
-            for(i=0;i<=cat1;i++)//на 1 больше
+            a+=1000000000;
+            buff=num1->prev;
+            while(1)
             {
-                tmp->value+=plus;
-                plus=0;
-                while(tmp->value > 9)
+                if(buff->value)
                 {
-                    tmp->value-=10;
-                    plus++;
+                    buff->value--;
+                    break;
                 }
-                tmp = tmp->prev;
+                else
+                {
+                    buff->value=999999999;
+                    buff=buff->prev;
+                }
             }
+        }
 
-            if(num2->category==1)
-            {
-                break;
-            }
-            else
-            {
-                num1=begin_of_num1;
-                last_pos_of_tmp=last_pos_of_tmp->prev;
-                tmp=last_pos_of_tmp;
-                num2=num2->next;
-                b=num2->value;
-            }
+        node_push_tail(a-b, dbll_res);
+
+        if(num2->prev)
+        {
+            num2=num2->prev;
+            b=num2->value;
         }
         else
         {
-            num1=num1->next;
-            tmp=tmp->prev;
+            b=0;
+        }
+
+        if(num1->prev)
+        {
+            num1=num1->prev;
+            a=num1->value;
+        }
+        else
+        {
+            break;
         }
     }
 
     //delete '0'
-        tmp=dbll_buff->head;
-        if(tmp->value==0)
-        {
+    //node_pop_zeros(buff_up);
+
+    num_pop(buff_up,buff_up->head->next);
+    return dbll_res;
+}
+
+void division()
+{
+    dbl_list_node *num1=dbll_up->head->next->head;
+
+    dbl_list_num *divider=dbll_up->head;
+    dbl_list_num *dbll_res= num_push_head(dbll_up);
+
+dbl_list_up *buff_up=up_create();
+dbl_list_num *dbll_buff= num_push_head(buff_up);
+
+    long long int div=0;
+
+    //node_push_head(0, dbll_res);
+    while(1)
+    {
+        node_push_tail(num1->value, dbll_buff);
+        if(comparison(dbll_buff,divider))
+        {//делить можно
             while(1)
             {
-                if(dbll_buff->head == dbll_buff->tail)
-                {
-                    break;
-                }
-                node_del(dbll_buff);
-                tmp=dbll_buff->head;//исправить баг с '0'!!!-удаляется
-                if(tmp->value!=0)
+                dbll_buff=subtraction_for_division(buff_up,divider);
+                div++;
+                if(!comparison(dbll_buff,divider))
                 {
                     break;
                 }
             }
+            node_push_tail(div, dbll_res);
+            div=0;
+        }
+        else
+        {//делить пока рано, надо снести еще из делимого
+            node_push_tail(0, dbll_res);
         }
 
-    number_delete(dbll);
-    number_delete(dbll);
-    buff_to_dbll(dbll_buff,dbll);
-    delete_dbl_list(&dbll_buff);
-}
+        if(num1->next)
+        {
+            num1=num1->next;
+        }
+        else
+        {
+            break;
+        }
+    }
 
+
+
+}
+/*
 void division(dbl_list *dbll)
 {
     dbl_list* dbll_res=create_dbl_list();
@@ -508,87 +522,5 @@ void division(dbl_list *dbll)
     buff_to_dbll(dbll_res,dbll);
     delete_dbl_list(&dbll_res);
     delete_dbl_list(&dbll_buff);
-}
-
-void if_sum(dbl_list *dbll)
-{
-    //++
-    if(dbll->head->minus==0 && dbll->head->first->next->minus==0)
-    {
-        sum(dbll);
-    }
-    //--
-    else if (dbll->head->minus > 0 && dbll->head->first->next->minus > 0)
-    {
-        sum(dbll);
-        change_sign(dbll);
-    }
-    //+-
-    else if (dbll->head->minus > 0 && dbll->head->first->next->minus == 0)
-    {
-        subtraction(dbll);
-    }
-    //-+
-    else if (dbll->head->minus == 0 && dbll->head->first->next->minus > 0)
-    {
-        subtraction(dbll);
-        change_sign(dbll);
-    }
-}
-
-void if_subtraction(dbl_list *dbll)
-{
-    //++
-    if(dbll->head->minus==0 && dbll->head->first->next->minus==0)
-    {
-        subtraction(dbll);
-    }
-    //--!
-    else if (dbll->head->minus > 0 && dbll->head->first->next->minus > 0)
-    {
-        subtraction(dbll);
-        change_sign(dbll);
-    }
-    //+-
-    else if (dbll->head->minus > 0 && dbll->head->first->next->minus == 0)
-    {
-        sum(dbll);
-    }
-    //-+
-    else if (dbll->head->minus == 0 && dbll->head->first->next->minus > 0)
-    {
-        sum(dbll);
-        change_sign(dbll);
-    }
-}
-
-void if_multiplication(dbl_list *dbll)
-{
-    //++ --
-    if(dbll->head->minus == dbll->head->first->next->minus)
-    {
-        multiplication(dbll);
-    }
-    //+- -+
-    else if (dbll->head->minus != dbll->head->first->next->minus)
-    {
-        multiplication(dbll);
-        change_sign(dbll);
-    }
-}
-
-void if_division(dbl_list *dbll)
-{
-    //++ --
-    if(dbll->head->minus == dbll->head->first->next->minus)
-    {
-        division(dbll);
-    }
-    //+- -+
-    else if (dbll->head->minus != dbll->head->first->next->minus)
-    {
-        division(dbll);
-        change_sign(dbll);
-    }
 }
 */

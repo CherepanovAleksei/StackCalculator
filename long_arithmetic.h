@@ -10,4 +10,5 @@ void if_division();
 void sum();
 void subtraction();
 void multiplication();
+dbl_list_num *subtraction_for_division(dbl_list_up *buff_up, dbl_list_num* divider);
 void division();
